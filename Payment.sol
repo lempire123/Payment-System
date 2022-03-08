@@ -15,7 +15,7 @@ contract Payment {
     }
 
     function initialize(address _spender, uint256 _weeklyAllowance) public payable {
-        require(msg.sender == owner, "only Owner can deposit");
+        require(msg.sender == owner, "only Owner can initialise");
         require(initialized == false, "already initialized");
         spender = _spender;
         weeklyAllowance = _weeklyAllowance;
