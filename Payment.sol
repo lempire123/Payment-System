@@ -25,7 +25,7 @@ contract Payment {
 
     function deposit() public payable {}
 
-    function claim() public {
+    function claim() external {
         require(msg.sender == spender, "Can only be called by spender");
         require(block.timestamp >= (startTime + (weekCounter * 1 weeks)), "Cannot claim yet");
         require(getContractBalance() >= weeklyAllowance, "Gotta top up the balance");
@@ -34,7 +34,7 @@ contract Payment {
         totalClaimed += weeklyAllowance;
     }
 
-    function withdraw(uint256 amount) public {
+    function withdraw(uint256 amount) external {
         require(msg.sender == owner, "Only Owner can access");
         payable(msg.sender).transfer(amount);
     }
