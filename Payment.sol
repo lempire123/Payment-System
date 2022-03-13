@@ -16,7 +16,7 @@ contract Payment {
     Position[] public positions;
     
     // Mapping of owner to its corresponding position 
-    // Each owner can only have one position
+    // Each owner can only have one position (could be changed to have an array of positions)
     mapping(address => Position) public ownerPosition;
 
     // Allows anyone to create a position
