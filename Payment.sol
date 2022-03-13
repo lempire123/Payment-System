@@ -5,7 +5,6 @@ contract Payment {
     // A position represents the relationship between the Owner and spender
     struct Position {
         address spender;
-        uint256 allowance;
         uint256 totalDeposit;
         uint256 totalClaimed;
         uint256 weeklyAllowance;
@@ -21,10 +20,8 @@ contract Payment {
 
     // Allows anyone to create a position
     function createPosition(
-        address _spender;
-        uint256 _allowance;
-        uint256 _weekCounter;
-        uint256 _weeklyAllowance;
+        address _spender,
+        uint256 _weeklyAllowance,
         ) public payable {
             
         // Cannot create more than one position
@@ -33,11 +30,10 @@ contract Payment {
         // Creation of position
         Position newPosition = Position(
             spender: _spender,
-            allowance: _allowance,
             totalDeposit: msg.value,
             weekCounter: 1,
             totalClaimed: 0,
-            weeklyAllowance: _weekCounter,
+            weeklyAllowance: _weeklyAllowance,
             lastClaim: block.timestamp
         );
 
@@ -73,7 +69,7 @@ contract Payment {
     // Sends the claimable amount of a position to its corresponding spender
     function claimPosition(Position _position) internal returns (uint256) {
         uint256 weeksSinceLastClaim = (block.timestamp - _position.lastClaim) / 1 weeks;
-        uint256 claimable = weeksSinceLastClaim * weeklyAllowance;
+        uint256 claimable = weeksSinceLastClaim * _position.weeklyAllowance;
         // Make sure the position has enough funds
         require(_position.totalDeposit >= claimable, "Insufficient funds");
         // Update the state of the position
@@ -95,8 +91,8 @@ contract Payment {
 
     // Allows the owner of a position to top up its balance
     function deposit() public payable {
-        address depositor = msg.sender;
-        ownerPosition[depositor].totalDeposit += msg.value;
+        Position position = ownerPosition[msg.sender];
+        position.totalDeposit += msg.value;
     }
 
     // Allows the owner to withdraw ALL funds
