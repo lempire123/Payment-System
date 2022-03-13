@@ -15,7 +15,7 @@ contract Payment {
     // Array to keep track of all position ever created
     Position[] public positions;
     
-    // Mapping of position to its corresponding owner (creator)
+    // Mapping of owner to its corresponding position 
     // Each owner can only have one position
     mapping(address => Position) public ownerPosition;
 
