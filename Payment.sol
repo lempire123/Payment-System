@@ -45,17 +45,6 @@ contract Payment {
         positions.push(newPosition);
     }
 
-
-    // Allows the spender to claim his allowance for ALL positions he is elligible for
-    function claim() public {
-        address spender = msg.sender;
-        Position[] memory userPositions = getSpenderPositions(spender);
-        
-        for(uint i; i < userPositions.length; i++) {
-            claimPosition(userPositions[i]);
-        }
-    }
-
     // Loops through all the positions and collects the ones where "_spender" is the spender
     function getSpenderPositions(address _spender) public view returns (Position[] memory) {
         Position[] memory spenderPos;
@@ -68,17 +57,21 @@ contract Payment {
     }
 
     // Sends the claimable amount of a position to its corresponding spender
-    function claimPosition(Position memory _position) internal {
-        uint256 weeksSinceLastClaim = (block.timestamp - _position.lastClaim) / 1 weeks;
-        uint256 claimable = weeksSinceLastClaim * _position.weeklyAllowance;
-        // Make sure the position has enough funds
-        require(_position.totalDeposit >= claimable, "Insufficient funds");
-        // Update the state of the position
-        _position.lastClaim = block.timestamp;
-        _position.totalClaimed += claimable;
-        _position.totalDeposit -= claimable;
-        // Send the funds to the spender
-        payable(_position.spender).transfer(claimable);
+    function claimPositions() public {
+
+        for(uint i; i < positions.length; i++) {
+            uint256 weeksSinceLastClaim = (block.timestamp - positions[i].lastClaim) / 10 seconds;
+            uint256 claimable = weeksSinceLastClaim * positions[i].weeklyAllowance;
+            // Make sure the position has enough funds
+            require(positions[i].totalDeposit >= claimable, "Insufficient funds");
+            // Update the state of the position
+            positions[i].lastClaim = block.timestamp;
+            positions[i].totalClaimed += claimable;
+            positions[i].totalDeposit -= claimable;
+            // Send the funds to the spender
+            payable(positions[i].spender).transfer(claimable);
+        }
+        
        
     }
 
