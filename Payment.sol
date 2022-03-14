@@ -60,7 +60,7 @@ contract Payment {
     function claimPositions() public {
 
         for(uint i; i < positions.length; i++) {
-            uint256 weeksSinceLastClaim = (block.timestamp - positions[i].lastClaim) / 10 seconds;
+            uint256 weeksSinceLastClaim = (block.timestamp - positions[i].lastClaim) / 1 weeks;
             uint256 claimable = weeksSinceLastClaim * positions[i].weeklyAllowance;
             // Make sure the position has enough funds
             require(positions[i].totalDeposit >= claimable, "Insufficient funds");
