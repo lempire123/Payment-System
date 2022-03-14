@@ -44,18 +44,7 @@ contract Payment {
         // Position is pushed to the array
         positions.push(newPosition);
     }
-
-    // Loops through all the positions and collects the ones where "_spender" is the spender
-    function getSpenderPositions(address _spender) public view returns (Position[] memory) {
-        Position[] memory spenderPos;
-        for(uint i; i < positions.length; i++) {
-            if (positions[i].spender == _spender) {
-                spenderPos[i] = positions[i];
-            }
-        }
-        return spenderPos;
-    }
-
+    
     // Sends the claimable amount of a position to its corresponding spender
     function claimPositions() public {
 
