@@ -1,3 +1,4 @@
+//SPDX-License-Identifier:MIT
 pragma solidity ^0.8.0;
 
 contract Payment { 
@@ -9,6 +10,7 @@ contract Payment {
         uint256 totalClaimed;
         uint256 weeklyAllowance;
         uint256 lastClaim;
+        bool created;
     }
 
     // Array to keep track of all position ever created
@@ -21,20 +23,19 @@ contract Payment {
     // Allows anyone to create a position
     function createPosition(
         address _spender,
-        uint256 _weeklyAllowance,
+        uint256 _weeklyAllowance
         ) public payable {
-            
+          
         // Cannot create more than one position
-        require(ownerPosition[msg.sender] == 0, "Can only create one position");
-
+        require(ownerPosition[msg.sender].created == false, "Can only create one position");
         // Creation of position
-        Position newPosition = Position(
-            spender: _spender,
-            totalDeposit: msg.value,
-            weekCounter: 1,
-            totalClaimed: 0,
-            weeklyAllowance: _weeklyAllowance,
-            lastClaim: block.timestamp
+        Position memory newPosition = Position(
+            _spender,
+            msg.value,
+            0,
+            _weeklyAllowance,
+            block.timestamp,
+            true
         );
 
         // Mapping is added
@@ -47,8 +48,8 @@ contract Payment {
 
     // Allows the spender to claim his allowance for ALL positions he is elligible for
     function claim() public {
-        uint256 spender = msg.sender;
-        Position[] userPositions = getSpenderPositions(spender);
+        address spender = msg.sender;
+        Position[] memory userPositions = getSpenderPositions(spender);
         
         for(uint i; i < userPositions.length; i++) {
             claimPosition(userPositions[i]);
@@ -56,18 +57,18 @@ contract Payment {
     }
 
     // Loops through all the positions and collects the ones where "_spender" is the spender
-    function getSpenderPositions(address _spender) public view returns (Position[]) {
-        Position[] spenderPos;
+    function getSpenderPositions(address _spender) public view returns (Position[] memory) {
+        Position[] memory spenderPos;
         for(uint i; i < positions.length; i++) {
             if (positions[i].spender == _spender) {
-                spenderPos.push(positions[i])
+                spenderPos[i] = positions[i];
             }
         }
         return spenderPos;
     }
 
     // Sends the claimable amount of a position to its corresponding spender
-    function claimPosition(Position _position) internal returns (uint256) {
+    function claimPosition(Position memory _position) internal {
         uint256 weeksSinceLastClaim = (block.timestamp - _position.lastClaim) / 1 weeks;
         uint256 claimable = weeksSinceLastClaim * _position.weeklyAllowance;
         // Make sure the position has enough funds
@@ -85,19 +86,19 @@ contract Payment {
 
     // Allows the owner to change the allowance
     function editAllowance(uint256 newAllowance) public {
-        Position position = ownerPosition[msg.sender];
+        Position storage position = ownerPosition[msg.sender];
         position.weeklyAllowance = newAllowance;
     }
 
     // Allows the owner of a position to top up its balance
     function deposit() public payable {
-        Position position = ownerPosition[msg.sender];
+        Position storage position = ownerPosition[msg.sender];
         position.totalDeposit += msg.value;
     }
 
     // Allows the owner to withdraw ALL funds
     function withdrawFunds() public {
-        Position position = ownerPosition[msg.sender];
+        Position storage position = ownerPosition[msg.sender];
         uint256 bal = position.totalDeposit;
         payable(msg.sender).transfer(bal);
     }
