@@ -14,7 +14,6 @@ contract Payment {
         bool created;
     }
 
-    uint256 counter = 0;
     // Array to keep track of all position ever created
     Position[] public positions;
 
