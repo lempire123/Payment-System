@@ -11,7 +11,6 @@ contract Payment {
         uint256 totalClaimed;
         uint256 weeklyAllowance;
         uint256 lastClaim;
-        bool created;
     }
 
     // Array to keep track of all position ever created
@@ -30,8 +29,7 @@ contract Payment {
             msg.value,
             0,
             _weeklyAllowance,
-            block.timestamp,
-            true
+            block.timestamp
         );
 
         // Position is pushed to the array
