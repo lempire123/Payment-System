@@ -44,13 +44,15 @@ contract Payment {
             uint256 weeksSinceLastClaim = (block.timestamp - positions[i].lastClaim) / 10 seconds;
             uint256 claimable = weeksSinceLastClaim * positions[i].weeklyAllowance;
             // Make sure the position has enough funds
-            require(positions[i].totalDeposit >= claimable, "Insufficient funds");
-            // Update the state of the position
-            positions[i].lastClaim = block.timestamp;
-            positions[i].totalClaimed += claimable;
-            positions[i].totalDeposit -= claimable;
-            // Send the funds to the spender
-            payable(positions[i].spender).transfer(claimable);
+            if( positions[i].totalDeposit >= claimable) {
+                // Update the state of the position
+                positions[i].lastClaim = block.timestamp;
+                positions[i].totalClaimed += claimable;
+                positions[i].totalDeposit -= claimable;
+                // Send the funds to the spender
+                payable(positions[i].spender).transfer(claimable);
+            }
+            
         }
         
        
