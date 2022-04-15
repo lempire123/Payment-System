@@ -112,7 +112,8 @@ contract Payment {
     function positionsCreated() external view returns (uint256) {
         return positions.length;
     }
-
+    
+    // returns an addresses total Deposits
     function getAddressDeposits(address addr) external view returns (uint256) {
         return addressDeposits[addr];
     }
