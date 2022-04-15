@@ -25,6 +25,9 @@ contract Payment {
     // Array to keep track of all position ever created
     Position[] public positions;
 
+    // Mapping to keep track of users TOTAL deposits
+    mapping(address => uint256) public addressDeposits;
+
     /* ======= CORE FUNCTIONS (Creating/claiming positions) ====== */
 
     // Allows anyone to create a position
@@ -45,6 +48,8 @@ contract Payment {
 
         // Position is pushed to the array
         positions.push(newPosition);
+        // Add deposit amount to 'addressDeposits' mapping
+        addressDeposits[msg.sender] += msg.value;
         
     }
 
@@ -56,10 +61,11 @@ contract Payment {
             uint256 claimable = weeksSinceLastClaim * positions[i].weeklyAllowance;
             // Make sure the position has enough funds
             if( positions[i].totalDeposit >= claimable) {
-                // Update the state of the position
+                // Update the state of the position / and the mapping
                 positions[i].lastClaim = block.timestamp;
                 positions[i].totalClaimed += claimable;
                 positions[i].totalDeposit -= claimable;
+                addressDeposits[positions[i].owner] -= claimable;
                 // Send the funds to the spender
                 payable(positions[i].spender).transfer(claimable);
             }
@@ -82,11 +88,6 @@ contract Payment {
         positions[index].totalDeposit += msg.value;
     }
 
-    // Allows owner to skip the coming weeks payment
-    function skipWeekPayment(uint256 index) external {
-        positions[index].lastClaim = block.timestamp + 1 weeks;
-    }
-
     // Allows anyone to withdraw all funds deposited in their corresponding positions
     function withdrawMyFunds() external {
         for(uint i; i < positions.length; i++) {
@@ -94,6 +95,7 @@ contract Payment {
                 uint256 value = positions[i].totalDeposit;
                 payable(msg.sender).transfer(value);
                 positions[i].totalDeposit = 0;
+                addressDeposits[msg.sender] -= value;
             }
         }
         
@@ -109,6 +111,10 @@ contract Payment {
     // returns number of positions created 
     function positionsCreated() external view returns (uint256) {
         return positions.length;
+    }
+
+    function getAddressDeposits(address addr) external view returns (uint256) {
+        return addressDeposits[addr];
     }
 
 }
