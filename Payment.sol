@@ -87,14 +87,18 @@ contract Payment {
     }
 
     // Allows anyone to withdraw all funds deposited in their positions
-    function withdrawMyFunds() external { 
-        uint256 userDeposits = addressDeposits[msg.sender];
-        payable(msg.sender).transfer(userDeposits);
-        addressDeposits[msg.sender] = 0;
-        
+    function withdrawMyFunds() external {
+        for(uint i; i < positions.length; i++) {
+            if (positions[i].owner == msg.sender) {
+                uint256 value = positions[i].totalDeposit;
+                payable(msg.sender).transfer(value);
+                positions[i].totalDeposit = 0;
+                addressDeposits[msg.sender] -= value;
+            }
+        }
     }
 
-    /* ======== GETTER FUNCTIONS ========= */
+    /* ======== VIEW FUNCTIONS ========= */
 
     // returns eth balance of address(this)
     function contractBalance() external view returns (uint256) {
