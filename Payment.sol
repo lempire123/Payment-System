@@ -17,7 +17,6 @@ contract Payment {
         address owner;
         address spender;
         uint256 totalDeposit;
-        uint256 totalClaimed;
         uint256 weeklyAllowance;
         uint256 lastClaim;
     }
@@ -41,7 +40,6 @@ contract Payment {
             msg.sender,
             _spender,
             msg.value,
-            0,
             _weeklyAllowance,
             block.timestamp
         );
@@ -57,13 +55,12 @@ contract Payment {
     function claimPositions() public {
 
         for(uint i; i < positions.length; i++) {
-            uint256 weeksSinceLastClaim = (block.timestamp - positions[i].lastClaim) / 1 weeks;
+            uint256 weeksSinceLastClaim = (block.timestamp - positions[i].lastClaim) / 1 seconds;
             uint256 claimable = weeksSinceLastClaim * positions[i].weeklyAllowance;
             // Make sure the position has enough funds
             if( positions[i].totalDeposit >= claimable) {
                 // Update the state of the position / and the mapping
                 positions[i].lastClaim = block.timestamp;
-                positions[i].totalClaimed += claimable;
                 positions[i].totalDeposit -= claimable;
                 addressDeposits[positions[i].owner] -= claimable;
                 // Send the funds to the spender
@@ -86,18 +83,14 @@ contract Payment {
     // Allows the owner of a position to top up its balance
     function deposit(uint256 index) public payable {
         positions[index].totalDeposit += msg.value;
+        addressDeposits[msg.sender] += msg.value;
     }
 
-    // Allows anyone to withdraw all funds deposited in their corresponding positions
-    function withdrawMyFunds() external {
-        for(uint i; i < positions.length; i++) {
-            if (positions[i].owner == msg.sender) {
-                uint256 value = positions[i].totalDeposit;
-                payable(msg.sender).transfer(value);
-                positions[i].totalDeposit = 0;
-                addressDeposits[msg.sender] -= value;
-            }
-        }
+    // Allows anyone to withdraw all funds deposited in their positions
+    function withdrawMyFunds() external { 
+        uint256 userDeposits = addressDeposits[msg.sender];
+        payable(msg.sender).transfer(userDeposits);
+        addressDeposits[msg.sender] = 0;
         
     }
 
@@ -112,8 +105,7 @@ contract Payment {
     function positionsCreated() external view returns (uint256) {
         return positions.length;
     }
-    
-    // returns an addresses total Deposits
+
     function getAddressDeposits(address addr) external view returns (uint256) {
         return addressDeposits[addr];
     }
