@@ -91,9 +91,9 @@ contract Payment {
         for(uint i; i < positions.length; i++) {
             if (positions[i].owner == msg.sender) {
                 uint256 value = positions[i].totalDeposit;
-                payable(msg.sender).transfer(value);
                 positions[i].totalDeposit = 0;
                 addressDeposits[msg.sender] -= value;
+                payable(msg.sender).transfer(value);
             }
         }
     }
